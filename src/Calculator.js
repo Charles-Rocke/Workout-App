@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import clickSound from "./ClickSound.m4a";
 
 function Calculator({ workouts, allowSound }) {
@@ -11,8 +11,17 @@ function Calculator({ workouts, allowSound }) {
   // set how long of a break
   const [durationBreak, setDurationBreak] = useState(5);
 
-  // set length of workout duration timer
-  const duration = (number * sets * speed) / 60 + (sets - 1) * durationBreak;
+  const [duration, setDuration] = useState(0);
+
+  // use effect to keep in sync with all other state variables (usually should not do this)
+  useEffect(
+    function () {
+      setDuration((number * sets * speed) / 60 + (sets - 1) * durationBreak);
+    },
+    [number, sets, speed, durationBreak]
+  );
+  // set length of workout duration timer DERIVED STATE
+  // const duration = (number * sets * speed) / 60 + (sets - 1) * durationBreak;
   // convert timer duration to minutes
   const mins = Math.floor(duration);
   // set timer seconds
@@ -24,6 +33,14 @@ function Calculator({ workouts, allowSound }) {
     const sound = new Audio(clickSound);
     sound.play();
   };
+
+  function handleInc() {
+    setDuration((duration) => Math.floor(duration + 1));
+  }
+
+  function handleDec() {
+    setDuration((duration) => (duration > 1 ? Math.ceil(duration - 1) : 0));
+  }
 
   return (
     <>
@@ -74,13 +91,13 @@ function Calculator({ workouts, allowSound }) {
         </div>
       </form>
       <section>
-        <button onClick={() => {}}>–</button>
+        <button onClick={handleDec}>–</button>
         <p>
           {mins < 10 && "0"}
           {mins}:{seconds < 10 && "0"}
           {seconds}
         </p>
-        <button onClick={() => {}}>+</button>
+        <button onClick={handleInc}>+</button>
       </section>
     </>
   );
