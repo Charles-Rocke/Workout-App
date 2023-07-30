@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import clickSound from "./ClickSound.m4a";
 
 function Calculator({ workouts, allowSound }) {
@@ -13,6 +13,17 @@ function Calculator({ workouts, allowSound }) {
 
   const [duration, setDuration] = useState(0);
 
+  // play sound helper method
+  // const playSound = useCallback(
+  //   function () {
+  //     if (!allowSound) return;
+  //     // Audio is a browser feature
+  //     const sound = new Audio(clickSound);
+  //     sound.play();
+  //   },
+  //   [allowSound]
+  // );
+
   // use effect to keep in sync with all other state variables (usually should not do this)
   useEffect(
     function () {
@@ -20,19 +31,27 @@ function Calculator({ workouts, allowSound }) {
     },
     [number, sets, speed, durationBreak]
   );
+
+  // sound sync with duratio state to play sound on change of duration
+  useEffect(
+    function () {
+      const playSound = function () {
+        if (!allowSound) return;
+        // Audio is a browser feature
+        const sound = new Audio(clickSound);
+        sound.play();
+      };
+      playSound();
+    },
+    //  add duration voluntarily to play sound on duration change
+    [duration, allowSound]
+  );
   // set length of workout duration timer DERIVED STATE
   // const duration = (number * sets * speed) / 60 + (sets - 1) * durationBreak;
   // convert timer duration to minutes
   const mins = Math.floor(duration);
   // set timer seconds
   const seconds = (duration - mins) * 60;
-
-  // play sound helper method
-  const playSound = function () {
-    if (!allowSound) return;
-    const sound = new Audio(clickSound);
-    sound.play();
-  };
 
   function handleInc() {
     setDuration((duration) => Math.floor(duration + 1));
